@@ -1,0 +1,6 @@
+{
+  "Reporter": "Scorix",
+  "ItemsUrl": "https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/master/formatted/items.json",
+  "EventsUrl": "https://kellerus.de/lootlogger/events.json",
+  "DiscordWebHook": "https://discord.com/api/webhooks/827877961754738698/irGvCn4H0KGV-t_pJ5jlyvTfO0tsutL3a6WswtcPSysuinJObqJyqzFGkHVUMCraeohA"
+}
