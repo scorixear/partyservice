@@ -212,12 +212,15 @@ namespace PartyService
 
         private void SaveLog_Click(object sender, RoutedEventArgs e)
         {
-            if(!Directory.Exists(Path.Combine(Assembly.GetExecutingAssembly().Location, "Logs")))
+            if (!Directory.Exists(Path.Combine(Assembly.GetExecutingAssembly().Location, "Logs")))
             {
                 Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Logs"));
             }
-            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Logs", $"PartyLog_{DateTime.UtcNow.ToString("HH-mm-ss_yyyy-MM-dd")}.txt"),
+            if (Log.Count > 0)
+            {
+                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Logs", $"PartyLog_{DateTime.UtcNow.ToString("HH-mm-ss_yyyy-MM-dd")}.txt"),
                 Log.Aggregate((a, b) => a + "\n" + b));
+            }
             Log.Clear();
             PlayerSource.Clear();
             PlayerDataGrid.ItemsSource = null;
@@ -230,7 +233,7 @@ namespace PartyService
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            PartyService_PlayerLeftEvent("Test "+PlayerSource.Count);
+            PartyService_PlayerLeftEvent("Test " + PlayerSource.Count);
         }
     }
 }
