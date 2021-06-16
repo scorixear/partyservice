@@ -189,7 +189,9 @@ namespace PartyService
         private void PartyService_PlayerLeftEvent(string playerName)
         {
             DateTime now = DateTime.UtcNow;
-            PlayerSource.Add(new PlayerData { PlayerName = now.ToString("[HH:mm] ") + playerName });
+            List<PlayerData> oldData = new List<PlayerData>(PlayerSource);
+            oldData.Add(new PlayerData { PlayerName = now.ToString("[HH:mm] ") + playerName });
+            PlayerSource = new ObservableCollection<PlayerData>(oldData);
             Log.Add(now.ToString("[yyyy/MM/dd HH:mm:ss] ") + playerName);
             Dispatcher.Invoke(() =>
             {

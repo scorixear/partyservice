@@ -46,6 +46,7 @@ namespace PartyService
                 return;
             }
 
+            Console.WriteLine(iCode);
             if (eventDictionary.ContainsKey("evPartyPlayerJoined") && iCode == eventDictionary["evPartyPlayerJoined"])
             {
                 this.OnPlayerPartyJoin(parameters);
@@ -70,11 +71,10 @@ namespace PartyService
 
         private void OnPlayerPartyLeft(Dictionary<byte, object> parameters)
         {
-            try
-            {
+            
                 int leave = int.Parse(parameters[1].ToString());
                 partyService.RemovePlayer(leave);
-            } catch { }
+            
         }
 
         
