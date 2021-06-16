@@ -1,9 +1,15 @@
 ﻿using PartyService.Models;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 
 namespace PartyService
@@ -13,28 +19,12 @@ namespace PartyService
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Task resetTask;
-        private Action resetTaskAction;
+        public ObservableCollection<PlayerData> PlayerSource = new ObservableCollection<PlayerData>();
+
+        private List<string> Log = new List<string>();
         public MainWindow()
         {
             InitializeComponent();
-            resetTaskAction = () =>
-            {
-                int value = 100;
-                while (value> 0)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        ResetProgressBar.Value -= 1;
-                        value = (int)ResetProgressBar.Value;
-                    });
-                    Task.Delay(10).Wait();
-                }
-                Dispatcher.Invoke(() =>
-                {
-                    PlayerTextBox.Text = "";
-                });
-            };
         }
 
         private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
@@ -182,7 +172,6 @@ namespace PartyService
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            resetTask = new Task(resetTaskAction);
             Config config = Config.instance;
             PartyLeaver logger = null;
             try
@@ -194,28 +183,54 @@ namespace PartyService
             {
                 Debug.Write(ex.StackTrace);
             }
+            PlayerDataGrid.ItemsSource = PlayerSource;
         }
 
         private void PartyService_PlayerLeftEvent(string playerName)
         {
+            DateTime now = DateTime.UtcNow;
+            PlayerSource.Add(new PlayerData { PlayerName = now.ToString("[HH:mm] ") + playerName });
+            Log.Add(now.ToString("[yyyy/MM/dd HH:mm:ss] ") + playerName);
             Dispatcher.Invoke(() =>
             {
-                PlayerTextBox.Text += "\n" + DateTime.UtcNow.ToString("[HH:mm] ") +  playerName;
-                ResetProgressBar.Value = ResetProgressBar.Maximum;
+                PlayerDataGrid.ItemsSource = null;
+                PlayerDataGrid.ItemsSource = PlayerSource;
             });
-            if (resetTask.Status != TaskStatus.Running)
-            {
-                if (resetTask.Status == TaskStatus.RanToCompletion)
-                {
-                    resetTask = new Task(resetTaskAction);
-                }
-                resetTask.Start();
-            }
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
         {
             Topmost = true;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            PlayerSource.Remove((PlayerData)((Button)sender).DataContext);
+            PlayerDataGrid.ItemsSource = null;
+            PlayerDataGrid.ItemsSource = PlayerSource;
+        }
+
+        private void SaveLog_Click(object sender, RoutedEventArgs e)
+        {
+            if(!Directory.Exists(Path.Combine(Assembly.GetExecutingAssembly().Location, "Logs")))
+            {
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Logs"));
+            }
+            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Logs", $"PartyLog_{DateTime.UtcNow.ToString("HH-mm-ss_yyyy-MM-dd")}.txt"),
+                Log.Aggregate((a, b) => a + "\n" + b));
+            Log.Clear();
+            PlayerSource.Clear();
+            PlayerDataGrid.ItemsSource = null;
+            PlayerDataGrid.ItemsSource = PlayerSource;
+        }
+        public class PlayerData
+        {
+            public string PlayerName { get; set; }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            PartyService_PlayerLeftEvent("Test "+PlayerSource.Count);
         }
     }
 }
